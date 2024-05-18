@@ -1,0 +1,7 @@
+.env
+bin
+*_templ.go*
+tmp
+.idea
+*.jpeg
+*.png

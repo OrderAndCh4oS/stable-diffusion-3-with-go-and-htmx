@@ -1,0 +1,29 @@
+package layout
+
+import "token-based-payment-service-api/view/ui"
+
+templ App(nav bool, footer bool) {
+    <!doctype html>
+    <html lang="en" data-theme="acid">
+    <head>
+    <meta charset="UTF-8" />
+     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+     <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+     <title>Payment Service</title>
+     <link rel="stylesheet" href="/public/styles.css"/>
+     <script src="https://unpkg.com/htmx.org@1.9.11" integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0" crossorigin="anonymous"></script>
+     <script src="https://unpkg.com/htmx.org@1.9.11/dist/ext/remove-me.js"></script>
+    </head>
+    <body class="antialiased">
+    <div class="min-h-screen h-full bg-base-200 flex flex-col">
+            if nav {
+                @ui.Navigation()
+            }
+            { children... }
+    </div>
+    if footer {
+        @ui.Footer()
+    }
+    </body>
+    </html>
+}

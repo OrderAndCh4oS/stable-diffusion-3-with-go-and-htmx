@@ -1,0 +1,109 @@
+package generate
+
+import (
+        "token-based-payment-service-api/view/layout"
+        "token-based-payment-service-api/types"
+        "fmt"
+)
+
+type ViewData struct {
+    Images []types.Image
+}
+
+templ Index(data ViewData) {
+    @layout.App(true, true) {
+        <div class="flex w-full flex-grow">
+            <div class="w-1/4 min-w-[400px] p-8 bg-base-100 flex-grow border-r border-base-300">
+                @GenerateForm(GenerateFormParams{}, GenerateFormErrors{}, GenerateFormResult{})
+            </div>
+            <div class="w-3/4 p-8 bg-base-200 flex-grow">
+                @Gallery(data.Images)
+            </div>
+        </div>
+    }
+}
+
+type GenerateFormParams struct {
+    Prompt string
+    Amount int
+    Image types.Image
+}
+
+type GenerateFormErrors struct {
+    Prompt string
+    Amount string
+    ServerError string
+}
+
+type GenerateFormResult struct {
+    Images []types.Image
+}
+
+templ GenerateForm(params GenerateFormParams, errors GenerateFormErrors, result GenerateFormResult) {
+    <form hx-post="/generate" hx-swap="outerHTML">
+        <div class="form-control mb-4">
+            <label for="prompt" class="label">Prompt</label>
+            <textarea id="prompt" name="prompt" class="textarea textarea-bordered">
+                {params.Prompt}
+            </textarea>
+            if errors.Prompt != "" {
+               <p class="text-error text-xs mt-2">{errors.Prompt}</p>
+            }
+        </div>
+        <div class="form-control mb-4">
+            <label for="amount" class="label">No. of Images</label>
+            <div class="join">
+              <input class="join-item btn" type="radio" name="amount" aria-label="1" value="1" />
+              <input class="join-item btn" type="radio" name="amount" aria-label="2" value="2" />
+              <input class="join-item btn" type="radio" name="amount" aria-label="3" value="3" checked />
+              <input class="join-item btn" type="radio" name="amount" aria-label="4" value="4" />
+              <input class="join-item btn" type="radio" name="amount" aria-label="5" value="5" />
+            </div>
+            if errors.Amount != "" {
+               <p class="text-error text-xs mt-2">{errors.Amount}</p>
+            }
+        </div>
+        <button class="btn btn-primary w-full">Generate</button>
+        if errors.ServerError != "" {
+            <p class="text-error text-xs mt-2">{errors.ServerError}</p>
+        }
+    </form>
+    if len(result.Images) > 0 {
+        for _, image := range result.Images {
+            <div hx-swap-oob="afterbegin:#gallery">
+                @GalleryImage(image)
+            </div>
+        }
+    }
+}
+
+templ Gallery(images []types.Image) {
+    <div class="grid grid-cols-4 gap-4" id="gallery">
+        for _, image := range images {
+            @GalleryImage(image)
+        }
+    </div>
+}
+
+templ GalleryImage(image types.Image) {
+    if image.Status == types.ImageStatusFailed {
+        <div class="bg-base-300 rounded-lg flex justify-center items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="w-1/3 h-1/3 text-base-200">
+                <path fill="currentColor" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zm0-384c13.3 0 24 10.7 24 24V264c0 13.3-10.7 24-24 24s-24-10.7-24-24V152c0-13.3 10.7-24 24-24zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"/>
+            </svg>
+        </div>
+    } else if image.Status == types.ImageStatusPending {
+        <div
+            hx-get={fmt.Sprintf("/image/status/%d", image.ID)}
+            hx-trigger="load delay:3s"
+            hx-swap="outerHTML"
+            class="animate-gradient-x to-base-300 from-base-100 bg-gradient-to-bl bg-[length:300%_300%] aspect-[3/4] rounded-lg flex justify-center items-center"
+        >
+            <span class="loading loading-spinner loading-lg text-base-200"></span>
+        </div>
+    } else if image.Status == types.ImageStatusCompleted {
+        <div class="bg-base-300 rounded-lg">
+            <img src={image.ImageLocation}  alt={image.Prompt}/>
+        </div>
+    }
+}

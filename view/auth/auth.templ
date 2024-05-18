@@ -1,0 +1,248 @@
+package auth
+
+import (
+	"github.com/nedpals/supabase-go"
+    "token-based-payment-service-api/view/layout"
+)
+
+type SignUpParams struct {
+    Email string
+    Password string
+    ConfirmPassword string
+}
+
+type SignUpErrors struct {
+    Email string
+    Password string
+    ConfirmPassword string
+    SignUpError string
+}
+
+templ SignUp() {
+	@layout.App(false, false) {
+        <div class="flex justify-center mt-[8rem] min-h-screen">
+            <div class="w-full max-w-md">
+                <h1 class="text-2xl font-bold mb-4">Sign Up</h1>
+                @SignUpForm(SignUpParams{}, SignUpErrors{})
+            </div>
+        </div>
+	}
+}
+
+templ SignUpForm(credentials SignUpParams, errors SignUpErrors) {
+    <form hx-post="" hx-swap="outerHTML">
+        <div class="form-control mb-2">
+           <label for="email" class="label">Email</label>
+           <input id="email" name="email" type="email" required placeholder="Your email address" class="input input-bordered" />
+           if errors.Email != "" {
+            <p class="text-error text-xs mt-2">{errors.Email}</p>
+           }
+        </div>
+        <div class="form-control mb-4">
+            <label for="password" class="label">Password</label>
+            <input id="password" name="password" type="password" required placeholder="A super strong password" class="input input-bordered" />
+            if errors.Password != "" {
+                <p class="text-error text-xs mt-2">{errors.Password}</p>
+            }
+        </div>
+        <div class="form-control mb-8">
+            <label for="confirmPassword" class="label">Confirm Password</label>
+            <input id="confirmPassword" name="confirmPassword" type="password" required placeholder="Confirm your super strong password" class="input input-bordered" />
+            if errors.ConfirmPassword != "" {
+                <p class="text-error text-xs mt-2">{errors.ConfirmPassword}</p>
+            }
+        </div>
+        <button class="btn btn-primary w-full">Sign Up</button>
+        if errors.SignUpError != "" {
+            <p class="text-error text-xs mt-2">{errors.SignUpError}</p>
+        }
+    </form>
+}
+
+templ SignUpSuccess(email string) {
+	@layout.App(false, false) {
+	    <h2 class="text-xl">Success</h2>
+        <p>A confirmation email has been sent to <span class="text-bold text-success">{email}</span></p>
+	}
+}
+
+type SignInErrors struct {
+    InvalidCredentials string
+}
+
+templ SignIn() {
+	@layout.App(false, false) {
+        <div class="flex justify-center mt-[8rem] min-h-screen">
+            <div class="w-full max-w-md">
+                <h1 class="text-2xl font-bold mb-4">Sign In</h1>
+                @SignInForm(supabase.UserCredentials{}, SignInErrors{})
+                <div class="divider">OR</div>
+                <a href="/sign-in/provider/google" class="btn btn-secondary w-full">
+                    <span>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512" class="w-4">
+                            <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"/>
+                        </svg>
+                    </span>
+                    Sign In with Google
+                </a>
+            </div>
+        </div>
+	}
+}
+
+templ SignInForm(credentials supabase.UserCredentials, errors SignInErrors) {
+    <form hx-post="" hx-swap="outerHTML">
+        <div class="form-control mb-2">
+           <label for="email" class="label">Email</label>
+           <input id="email" name="email" type="email" required placeholder="Your email address" class="input input-bordered" />
+        </div>
+        <div class="form-control mb-8">
+            <label for="password" class="label">Password</label>
+            <input id="password" name="password" type="password" required placeholder="A super strong password" class="input input-bordered mb-2" />
+            <a href="/forgot-password" class="text-sm underline">Forgot Password</a>
+        </div>
+        <button class="btn btn-primary w-full">Sign In</button>
+        if errors.InvalidCredentials != "" {
+            <p class="text-error text-xs mt-2">{errors.InvalidCredentials}</p>
+        }
+    </form>
+}
+
+type ForgotPasswordParams struct {
+    Email string
+}
+
+type ForgotPasswordErrors struct {
+    Email string
+    ServerError string
+}
+
+templ ForgotPassword() {
+	@layout.App(false, false) {
+        <div class="flex justify-center mt-[8rem] min-h-screen">
+            <div class="w-full max-w-md">
+                <h1 class="text-2xl font-bold mb-4">Request Password Reset</h1>
+                <div class="mb-4">
+                    @ForgotPasswordForm(ForgotPasswordParams{}, ForgotPasswordErrors{})
+                </div>
+                <a href="/sign-in" class="btn btn-secondary">Back to Sign In</a>
+            </div>
+        </div>
+	}
+}
+
+templ ForgotPasswordForm(forgotPasswordParams ForgotPasswordParams, errors ForgotPasswordErrors) {
+    <form hx-post="" hx-swap="outerHTML">
+        <div class="form-control mb-8">
+           <label for="email" class="label">Email</label>
+           <input id="email" name="email" type="email" required placeholder="Your email address" class="input input-bordered" />
+           if errors.Email != "" {
+               <p class="text-error text-xs mt-2">{errors.Email}</p>
+           }
+        </div>
+        <button class="btn btn-primary w-full">Send</button>
+        if errors.ServerError != "" {
+            <p class="text-error text-xs mt-2">{errors.ServerError}</p>
+        }
+    </form>
+}
+
+templ ForgotPasswordSuccess() {
+    <div role="alert" class="alert alert-success">
+      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+      <span>Request Password Reset Sent Successfully</span>
+    </div>
+}
+
+templ ResetPasswordIndex() {
+	@layout.App(false, false) {
+        <div class="h-full flex-grow bg-base-200">
+            <div class="w-full max-w-xl mx-auto pt-8">
+                <h1 class="text-2xl font-bold border-b border-b-base-300 mb-8">Reset Password</h1>
+                @ResetPasswordForm(ResetPasswordErrors{})
+            </div>
+	    </div>
+	}
+}
+
+type ResetPasswordParams struct {
+    Password string
+    ConfirmPassword string
+}
+
+type ResetPasswordErrors struct {
+    Password string
+    ConfirmPassword string
+    ServerError string
+}
+
+templ ResetPasswordForm(errors ResetPasswordErrors) {
+    <form hx-put="/reset-password" hx-swap="outerHTML" hx-ext="remove-me" class="mb-8">
+         <div class="form-control mb-4">
+           <label for="password" class="label">Password</label>
+           <input id="password" name="password" type="password" placeholder="Your new password" class="input input-bordered" />
+           if errors.Password != "" {
+               <p class="text-error text-xs mt-2">{errors.Password}</p>
+           }
+        </div>
+        <div class="form-control mb-8">
+           <label for="confirmPassword" class="label">Confirm Password</label>
+           <input id="confirmPassword" name="confirmPassword" type="password" placeholder="Confirm new password" class="input input-bordered" />
+           if errors.ConfirmPassword != "" {
+               <p class="text-error text-xs mt-2">{errors.ConfirmPassword}</p>
+           }
+        </div>
+        <button class="btn btn-primary w-full">Update Password</button>
+        if errors.ServerError != "" {
+            <p class="text-error text-xs mt-2">{errors.ServerError}</p>
+        }
+    </form>
+}
+
+templ AccountSetup() {
+    @layout.App(true, true) {
+        <div class="h-full flex-grow bg-base-200">
+            <div class="max-w-xl mx-auto mt-8 pt-6 pb-8 px-8 bg-base-100 rounded-xl">
+                <h1 class="text-xl font-bold mb-2">Account Setup</h1>
+                <p class="text-gray-600 text-sm mb-4">Please provide some account details before continuing.</p>
+                @AccountSetupForm(AccountSetupParams{}, AccountSetupErrors{})
+            </div>
+        </div>
+    }
+}
+
+type AccountSetupErrors struct {
+    Username string
+    ServerError string
+}
+
+type AccountSetupParams struct {
+    Username string
+}
+
+templ AccountSetupForm(params AccountSetupParams, errors AccountSetupErrors) {
+    <form hx-post="" hx-swap="outerHTML">
+         <div class="form-control mb-8">
+           <label for="username" class="label">Username</label>
+           <input id="username" name="username" value={params.Username} placeholder="Your username" class="input input-bordered" />
+           if errors.Username != "" {
+               <p class="text-error text-xs mt-2">{errors.Username}</p>
+           }
+        </div>
+        <button class="btn btn-primary w-full">Complete Setup</button>
+        if errors.ServerError != "" {
+            <p class="text-error text-xs mt-2">{errors.ServerError}</p>
+        }
+    </form>
+}
+
+// Todo: this is insecure, it pops the access_token into the users browser history, review this. Probably use OAuth code flow
+templ AuthCallbackScript() {
+    <script>
+        const url = window.location.href;
+        const newUrl = url.replace("#", "?");
+        window.location = newUrl
+    </script>
+}
+
+

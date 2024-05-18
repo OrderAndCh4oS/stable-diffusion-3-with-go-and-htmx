@@ -1,0 +1,87 @@
+package account
+
+import (
+    "token-based-payment-service-api/view/layout"
+    "token-based-payment-service-api/types"
+)
+
+templ Index(user types.AuthenticatedUser) {
+	@layout.App(true, true) {
+        <div class="h-full flex-grow bg-base-200">
+            <div class="w-full max-w-xl mx-auto pt-8">
+                <h1 class="text-2xl font-bold border-b border-b-base-300 mb-8">My Account</h1>
+                <h2 class="text-xl font-bold border-b border-b-base-300 mb-4">Profile</h2>
+                @AccountUpdateForm(AccountUpdateParams{Username: user.Account.Username}, AccountUpdateErrors{})
+                <h2 class="text-xl font-bold border-b border-b-base-300 mb-4">Change Password</h2>
+                @ChangePasswordForm("", ChangePasswordErrors{})
+            </div>
+	    </div>
+	}
+}
+
+type AccountUpdateParams struct {
+    Username string
+    Success string
+}
+
+type AccountUpdateErrors struct {
+    Username string
+    ServerError string
+}
+
+templ AccountUpdateForm(params AccountUpdateParams, errors AccountUpdateErrors) {
+    <form hx-put="/account/update" hx-swap="outerHTML" hx-ext="remove-me" class="mb-8">
+         <div class="form-control mb-8">
+           <label for="username" class="label">Username</label>
+           <input id="username" name="username" value={params.Username} placeholder="Your username" class="input input-bordered" />
+           if errors.Username != "" {
+               <p class="text-error text-xs mt-2">{errors.Username}</p>
+           }
+        </div>
+        <button class="btn btn-primary w-full">Update</button>
+        if errors.ServerError != "" {
+            <p class="text-error text-xs mt-2">{errors.ServerError}</p>
+        }
+        if params.Success != "" {
+            <p class="text-success text-xs mt-2 animate-fade-out-delay" remove-me="3s">{params.Success}</p>
+        }
+    </form>
+}
+
+type ChangePasswordParams struct {
+    Password string
+    ConfirmPassword string
+}
+
+type ChangePasswordErrors struct {
+    Password string
+    ConfirmPassword string
+    ServerError string
+}
+
+templ ChangePasswordForm(success string, errors ChangePasswordErrors) {
+    <form hx-put="/account/change-password" hx-swap="outerHTML" hx-ext="remove-me" class="mb-8">
+         <div class="form-control mb-4">
+           <label for="password" class="label">Password</label>
+           <input id="password" name="password" type="password" placeholder="Your new password" class="input input-bordered" />
+           if errors.Password != "" {
+               <p class="text-error text-xs mt-2">{errors.Password}</p>
+           }
+        </div>
+        <div class="form-control mb-8">
+           <label for="confirmPassword" class="label">Confirm Password</label>
+           <input id="confirmPassword" name="confirmPassword" type="password" placeholder="Confirm new password" class="input input-bordered" />
+           if errors.ConfirmPassword != "" {
+               <p class="text-error text-xs mt-2">{errors.ConfirmPassword}</p>
+           }
+        </div>
+        <button class="btn btn-primary w-full">Update Password</button>
+        if errors.ServerError != "" {
+            <p class="text-error text-xs mt-2">{errors.ServerError}</p>
+        }
+        if success != "" {
+            <p class="text-success text-xs mt-2 animate-fade-out-delay" remove-me="3s">{success}</p>
+        }
+    </form>
+}
+
